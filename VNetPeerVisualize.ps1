@@ -12,13 +12,13 @@ Write-Output "`tnode [style=filled]";
 
 
 # Web Apps VPN Peering
-$webapps = Get-AzureRmWebApp 
+$webapps = Get-AzWebApp 
 foreach( $webapp in $webapps ){
-    $vnets = Get-AzureRmVirtualNetwork    
+    $vnets = Get-AzVirtualNetwork    
     foreach( $vnet in $vnets ){
         try{
             $resourceName = $webapp.SiteName + "/" + $vnet.Name
-            $webappVpnPeering = Get-AzureRmResource -ResourceGroupName $webapp.ResourceGroup -ResourceType "Microsoft.Web/sites/virtualNetworkConnections" -ResourceName $resourceName -ApiVersion 2016-03-01
+            $webappVpnPeering = Get-AzResource -ResourceGroupName $webapp.ResourceGroup -ResourceType "Microsoft.Web/sites/virtualNetworkConnections" -ResourceName $resourceName -ApiVersion 2016-03-01
             $msg = [String]::Format("`t`"{0}`" {1};", $webapp.SiteName, $webappsColor)
             Write-Output $msg
             $msg = [String]::Format("`t`"{0}`" -> `"{1}`" {2};", $webapp.SiteName, $vnet.Name, $vpnPeeringColor)
@@ -31,9 +31,9 @@ foreach( $webapp in $webapps ){
 
 
 # VNET Peering visualize
-$vnets = Get-AzureRmVirtualNetwork
+$vnets = Get-AzVirtualNetwork
 foreach($vnet in $vnets){
-    $peering = Get-AzureRmVirtualNetworkPeering -VirtualNetworkName $vnet.Name -ResourceGroupName $vnet.ResourceGroupName
+    $peering = Get-AzVirtualNetworkPeering -VirtualNetworkName $vnet.Name -ResourceGroupName $vnet.ResourceGroupName
     if( $peering -ne $null ){
         foreach($remoteVNet in $peering.RemoteVirtualNetwork){
             # extract vnet name from resource id
@@ -48,14 +48,14 @@ foreach($vnet in $vnets){
 
 
 # VNET VPN Peering visualize
-$rgs = Get-AzureRmResourceGroup
+$rgs = Get-AzResourceGroup
 foreach( $rg in $rgs ){
-    $conns = Get-AzureRmVirtualNetworkGatewayConnection -ResourceGroupName $rg.ResourceGroupName
+    $conns = Get-AzVirtualNetworkGatewayConnection -ResourceGroupName $rg.ResourceGroupName
     foreach( $conn in $conns ){
         $gateway1Text = $conn.VirtualNetworkGateway1Text.Replace('"','')
         $rg1 = $gateway1Text.Split("/")[4]
         $gateway1 = $gateway1Text.Split("/")[8]
-        $vnet1 = (Get-AzureRmVirtualNetworkGateway -Name $gateway1 -ResourceGroupName $rg1).IpConfigurations.Subnet.Id.Split("/")[8]
+        $vnet1 = (Get-AzVirtualNetworkGateway -Name $gateway1 -ResourceGroupName $rg1).IpConfigurations.Subnet.Id.Split("/")[8]
 
         if([string]::IsNullOrEmpty($conn.LocalNetworkGateway2Text) -eq $false)
         {
@@ -69,7 +69,7 @@ foreach( $rg in $rgs ){
             $gateway2Text = $conn.VirtualNetworkGateway2Text.Replace('"','')
             $rg2 = $gateway2Text.Split("/")[4]
             $gateway2 = $gateway2Text.Split("/")[8]
-            $vnet2 = (Get-AzureRmVirtualNetworkGateway -Name $gateway2 -ResourceGroupName $rg2).IpConfigurations.Subnet.Id.Split("/")[8]
+            $vnet2 = (Get-AzVirtualNetworkGateway -Name $gateway2 -ResourceGroupName $rg2).IpConfigurations.Subnet.Id.Split("/")[8]
 
             $msg = [String]::Format("`t`"{0}`" -> `"{1}`" {2};",$vnet1, $vnet2, $vpnPeeringColor)
         }
@@ -79,7 +79,7 @@ foreach( $rg in $rgs ){
 
 
 # Azure Redis Cache 
-$caches = Get-AzureRmRedisCache
+$caches = Get-AzRedisCache
 foreach( $cache in $caches){
      $msg = [String]::Format("`t`"{0}`" {1};", $cache.Name, $redisColor)
      Write-Output $msg 
@@ -89,9 +89,9 @@ foreach( $cache in $caches){
 }
 
 # Azure Storage connections
-$storageAccounts = Get-AzureRmStorageAccount
+$storageAccounts = Get-AzStorageAccount
 foreach( $storageAccount in $storageAccounts ){
-    $ruleset = Get-AzureRmStorageAccountNetworkRuleSet -Name $storageAccount.StorageAccountName -ResourceGroupName $storageAccount.ResourceGroupName
+    $ruleset = Get-AzStorageAccountNetworkRuleSet -Name $storageAccount.StorageAccountName -ResourceGroupName $storageAccount.ResourceGroupName
     if($ruleset.VirtualNetworkRules){
         $msg = [String]::Format("`t`"{0}`" {1};",$storageAccount.StorageAccountName, $storageColor)
         Write-Output $msg
@@ -105,9 +105,9 @@ foreach( $storageAccount in $storageAccounts ){
 }
 
 # SQL Database Connections
-$sqlServers = Get-AzureRmSqlServer
+$sqlServers = Get-AzSqlServer
 foreach( $sqlServer in $sqlServers ){
-    $rules = Get-AzureRmSqlServerVirtualNetworkRule -ServerName $sqlServer.ServerName -ResourceGroupName $sqlServer.ResourceGroupName
+    $rules = Get-AzSqlServerVirtualNetworkRule -ServerName $sqlServer.ServerName -ResourceGroupName $sqlServer.ResourceGroupName
     if($rules){
         $msg = [String]::Format("`t`"{0}`" {1};",$sqlServer.ServerName, $sqlColor)
         Write-Output $msg
